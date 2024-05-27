@@ -1,0 +1,18 @@
+[project]
+name = "pyrpc"
+version = "0.0.1"
+authors = [
+    {name = "Cuong Tao", email = "taongoccuong.dp@gmail.com"}
+]
+description = "An simple remote procedure call"
+raedme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/taongoccuongdp/pyrpc"
+Issues = "https://github.com/taongoccuongdp/pyrpc/issues"
