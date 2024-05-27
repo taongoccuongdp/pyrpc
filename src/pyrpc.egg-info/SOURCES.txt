@@ -1,0 +1,11 @@
+LICENSE
+README.md
+pyproject.toml
+src/pyrpc/__init__.py
+src/pyrpc/client.py
+src/pyrpc/server.py
+src/pyrpc.egg-info/PKG-INFO
+src/pyrpc.egg-info/SOURCES.txt
+src/pyrpc.egg-info/dependency_links.txt
+src/pyrpc.egg-info/requires.txt
+src/pyrpc.egg-info/top_level.txt
