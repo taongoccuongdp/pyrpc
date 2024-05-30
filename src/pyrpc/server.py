@@ -60,6 +60,9 @@ class RPCServer:
         while 1:
             try:
                 data = client.recv(self.max_recv_size)
+                if not data:
+                    print(f'client {address} disconnected')
+                    break
                 func_name, args, kwargs = pickle.loads(data, encoding='utf8')
             except Exception as ex:
                 print(f'client {address} disconnected, {ex}')
