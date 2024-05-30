@@ -4,17 +4,17 @@ import inspect
 import traceback
 from threading import Thread
 
-import orjson
+import pickle
 
 
 class RPCServer:
     """A simple RPC Server
     """
-    def __init__(self, host: str, port: int, buffer_size: int=4096, max_threads: int=0) -> None:
+    def __init__(self, host: str, port: int, max_recv_size: int=4194304, max_connections: int=1) -> None:
         self.host = host; self.port = port; self.address = (self.host, self.port)
         self._methods: typing.Dict[str, typing.Callable] = {}
-        self.buffer_size = buffer_size
-        self.max_threads = max_threads
+        self.max_recv_size = max_recv_size
+        self.max_connections = max_connections
 
     def register_method(self, func: typing.Callable) -> None:
         """register a method
@@ -38,7 +38,7 @@ class RPCServer:
         """run rpc server
         """
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            sock.bind(self.address); sock.listen(self.max_threads)
+            sock.bind(self.address); sock.listen(self.max_connections)
             print(f'server is listening at {self.address}')
             while 1:
                 try:
@@ -59,24 +59,17 @@ class RPCServer:
         # received requests from client until client close connection
         while 1:
             try:
-                data = bytearray()
-                while 1:
-                    packet = client.recv(self.buffer_size)
-                    if not packet:
-                        break
-                    data.extend(packet)
-
-                func_name, args, kwargs = orjson.loads(data.decode())
+                data = client.recv(self.max_recv_size)
+                func_name, args, kwargs = pickle.loads(data, encoding='utf8')
             except Exception as ex:
                 print(f'client {address} disconnected, {ex}')
                 break
 
             try:
                 data = self._methods[func_name](*args, **kwargs)
-                client.sendall(orjson.dumps({'data': data}).encode())
-
+                client.sendall(pickle.dumps(data, protocol=pickle.HIGHEST_PROTOCOL))
             except Exception as ex:
-                client.sendall(orjson.dumps({'data': ex}).encode())
+                client.sendall(pickle.dumps(ex, protocol=pickle.HIGHEST_PROTOCOL))
                 traceback.print_exc()
 
         client.close()

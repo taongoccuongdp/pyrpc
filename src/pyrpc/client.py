@@ -1,13 +1,12 @@
 import socket
-
-import orjson
+import pickle
 
 
 class RPCClient:
-    def __init__(self, host: str, port: int, buffer_size: int=4096) -> None:
+    def __init__(self, host: str, port: int, max_recv_size: int=4194304) -> None:
         self.__sock: socket.socket = None
         self.__address = (host, port)
-        self.buffer_size = buffer_size
+        self.max_recv_size = max_recv_size
 
     def connect(self) -> None:
         try:
@@ -24,13 +23,8 @@ class RPCClient:
 
     def __getattr__(self, __name: str):
         def execute(*args, **kwargs):
-            data = orjson.dumps([__name, args, kwargs]).encode()
+            data = pickle.dumps([__name, args, kwargs], protocol=pickle.HIGHEST_PROTOCOL)
             self.__sock.sendall(data)
-            data = bytearray()
-            while 1:
-                packet = self.__sock.recv(self.buffer_size)
-                if not packet:
-                    break
-                data.extend(packet)
-            return orjson.loads(data.decode())['data']
+            data = self.__sock.recv(self.max_recv_size)
+            return pickle.loads(data, encoding='utf8')
         return execute
